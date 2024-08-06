@@ -1,28 +1,35 @@
 #!/bin/bash
 
 # Define the base path
-BASE_PATH="./lib"
+BASE_PATH="lib"
 
 # Define the folders and subfolders
-declare -A FOLDERS=(
-  ["$BASE_PATH/data"]="datasources models repositories"
-  ["$BASE_PATH/presentation"]="atoms molecues organisms"
-  ["$BASE_PATH/repository"]="usecases entities repositories"
-  ["$BASE_PATH/domains"]=""
-  ["$BASE_PATH/core"]="constants enums extensions"
+FOLDERS=(
+  "$BASE_PATH/data datasources models repositories"
+  "$BASE_PATH/presentation atoms molecules organisms"
+  "$BASE_PATH/repository usecases entities repositories"
+  "$BASE_PATH/domains"
+  "$BASE_PATH/core constants enums extensions"
 )
 
 # Create the folders, subfolders, and .dart files
-for FOLDER in "${!FOLDERS[@]}"; do
+for ENTRY in "${FOLDERS[@]}"; do
+  IFS=' ' read -r -a PARTS <<< "$ENTRY"
+  FOLDER="${PARTS[0]}"
+  SUBFOLDERS="${PARTS[@]:1}"
   mkdir -p "$FOLDER"
   # Create a .dart file with the folder name
-  touch "$FOLDER/$(basename $FOLDER).dart"
-  for SUBFOLDER in ${FOLDERS[$FOLDER]}; do
+  PARENT_FILE="$FOLDER/$(basename "$FOLDER").dart"
+  touch "$PARENT_FILE"
+  for SUBFOLDER in $SUBFOLDERS; do
     SUBFOLDER_PATH="$FOLDER/$SUBFOLDER"
     mkdir -p "$SUBFOLDER_PATH"
     # Create a .dart file with the subfolder name
-    touch "$SUBFOLDER_PATH/$(basename $SUBFOLDER_PATH).dart"
+    CHILD_FILE="$SUBFOLDER_PATH/$(basename "$SUBFOLDER_PATH").dart"
+    touch "$CHILD_FILE"
+    # Add export statement to the parent .dart file
+    echo "export './$SUBFOLDER/$(basename "$SUBFOLDER").dart';" >> "$PARENT_FILE"
   done
 done
 
-echo "Folders and .dart files created successfully."
+echo "Folders and .dart files created successfully, with export statements added to parent .dart files."
